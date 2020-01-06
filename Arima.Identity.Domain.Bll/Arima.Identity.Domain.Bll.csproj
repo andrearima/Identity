@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.Identity.Core" Version="2.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Arima.Identity.Domain.Dal\Arima.Identity.Domain.Dal.csproj" />
+    <ProjectReference Include="..\Arima.Identity.Domain\Arima.Identity.Domain.csproj" />
+    <ProjectReference Include="..\Arima.Identity.Infra.Dados.MySql\Arima.Identity.Infra.Dados.MySql.csproj" />
+  </ItemGroup>
+
+</Project>

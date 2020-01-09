@@ -1,8 +1,9 @@
 ﻿namespace Arima.Identity.Domain
 {
     using Microsoft.AspNetCore.Identity;
+    using System;
 
-    public class User : IdentityUser<string>
+    public class User : IdentityUser<Guid>
     {
         public override string NormalizedUserName 
         { 

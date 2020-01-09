@@ -12,9 +12,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Owin;
+//using Microsoft.Owin;
 
-[assembly: OwinStartup(typeof(Arima.Identity.Ui.Startup))]
+//[assembly: OwinStartup(typeof(Arima.Identity.Ui.Startup))]
 namespace Arima.Identity.Ui
 {
     public class Startup
@@ -39,14 +39,31 @@ namespace Arima.Identity.Ui
             });
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options => options.LoginPath = "/Identity/Index");
-
+                .AddCookie(options => options.LoginPath = "/Home/Index");
 
             services.AddTransient<Microsoft.AspNetCore.Identity.IUserStore<Arima.Identity.Domain.User>, UserStore>();
 
             services.AddTransient<Microsoft.AspNetCore.Identity.IRoleStore<Arima.Identity.Domain.Role>, RoleStore>();
 
-            services.AddIdentity<Arima.Identity.Domain.User, Arima.Identity.Domain.Role>().AddSignInManager();
+            services.AddTransient<Microsoft.AspNetCore.Identity.IRoleValidator<Arima.Identity.Domain.Role>, RoleStore>();
+
+            services.AddTransient<Microsoft.AspNetCore.Identity.IQueryableRoleStore<Arima.Identity.Domain.Role>, RoleStore>();
+
+            services.AddTransient<Microsoft.AspNetCore.Identity.IQueryableUserStore<Arima.Identity.Domain.User>, UserStore>();
+
+            //services.AddIdentity<Arima.Identity.Domain.User, Arima.Identity.Domain.Role>()
+            //    .AddSignInManager()
+            //    .AddUserStore<UserStore>()
+            //    .AddRoles<Domain.Role>()
+            //    .AddRoleStore<RoleStore>()
+            //    .AddSignInManager();
+
+            services.AddIdentityCore<Domain.User>()
+                .AddUserStore<UserStore>()
+                .AddRoles<Domain.Role>()
+                .AddRoleStore<RoleStore>()
+                .AddSignInManager();
+
 
             services.Configure<IdentityOptions>(options =>
             {
@@ -67,13 +84,14 @@ namespace Arima.Identity.Ui
                 options.User.AllowedUserNameCharacters =
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                 options.User.RequireUniqueEmail = true;
+
             });
 
             services.ConfigureApplicationCookie(options =>
             {
                 // Cookie settings
                 options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(999);
 
                 options.LoginPath = "/Conta/Login";
                 options.AccessDeniedPath = "/Conta/AcessoNegado";
@@ -97,9 +115,9 @@ namespace Arima.Identity.Ui
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            
+
             app.UseRouting();
-            
+
             app.UseAuthentication();
             app.UseAuthorization();
 

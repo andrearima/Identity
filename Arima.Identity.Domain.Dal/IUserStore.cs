@@ -8,7 +8,8 @@ namespace Arima.Identity.Domain.Dal
         IUserTwoFactorStore<Domain.User>,
         IUserPasswordStore<Domain.User>,
         IUserRoleStore<Domain.User>,
-        IUserLoginStore<Domain.User>
+        IUserLoginStore<Domain.User>,
+        IQueryableUserStore<Domain.User>
     {
     }
 }

@@ -2,81 +2,73 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Arima.Identity.Domain;
-using Arima.Identity.Domain.Bll;
-using Arima.Identity.Ui.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Arima.Identity.Ui.Controllers
 {
-    public class IdentityController : Controller
+    public class ClaimsController : Controller
     {
-        // GET: Identity
+        private UserManager<Domain.User> _userManager;
+        private SignInManager<Domain.User> _signManager;
+        private ILogger _logger;
+        public ClaimsController(
+            UserManager<Domain.User> userManager,
+            SignInManager<Domain.User> signManager,
+            ILoggerFactory logger)
+        {
+            _userManager = userManager;
+            _signManager = signManager;
+            _logger = logger.CreateLogger<Domain.User>();
+        }
+
         [Authorize]
         public ActionResult Index()
         {
-            IdentityViewModel model = new IdentityViewModel();
-            Domain.Bll.Role roleBll = new Domain.Bll.Role();
-            model.roles = new List<Domain.Role>();
-            model.roles = roleBll.ObterRoles();
-            Domain.Bll.User userll = new Domain.Bll.User();
-            model.users = new List<Domain.User>();
-            model.users = userll.ObterUsers();
-            return View(model);
+            return View();
         }
 
-        // GET: Identity/Details/5
         [Authorize]
         public ActionResult Details(int id)
         {
             return View();
         }
 
-        // GET: Identity/Create
         [Authorize]
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: Identity/Create
-        [Authorize]
+        // POST: Claims/Create
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public ActionResult Create(IFormCollection collection)
         {
             try
             {
-                Domain.Role role = new Domain.Role();
-                collection.TryGetValue("Id", out Microsoft.Extensions.Primitives.StringValues idValue);
-                collection.TryGetValue("Name", out Microsoft.Extensions.Primitives.StringValues nameValue);
-                collection.TryGetValue("NormalizedName", out Microsoft.Extensions.Primitives.StringValues normalizedNameValue);
-                role.Id = Guid.NewGuid();
-                role.Name = nameValue;
-                role.NormalizedName = normalizedNameValue;
+                // TODO: Add insert logic here
 
-                Domain.Bll.Role roleBll = new Domain.Bll.Role();
-                roleBll.InserirRole(role);
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+            catch
             {
                 return View();
             }
         }
 
-        // GET: Identity/Edit/5
         [Authorize]
         public ActionResult Edit(int id)
         {
             return View();
         }
 
-        // POST: Identity/Edit/5
-        [HttpPost]
         [Authorize]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, IFormCollection collection)
         {
@@ -92,14 +84,13 @@ namespace Arima.Identity.Ui.Controllers
             }
         }
 
-        // GET: Identity/Delete/5
         [Authorize]
         public ActionResult Delete(int id)
         {
             return View();
         }
 
-        // POST: Identity/Delete/5
+        // POST: Claims/Delete/5
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]

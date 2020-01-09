@@ -1,0 +1,69 @@
+﻿@model Arima.Identity.Ui.Models.UserRoleViewModel
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Edit</h1>
+
+<h4>UserRoleViewModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <div>
+            User: @Html.DisplayFor(model => model.user.UserName)
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayName("Roles do User")
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.roles)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item)
+                        </td>
+                        <td>
+                             @Html.ActionLink("Remover", "Remover", new { id = item, UserId = Model.user.Id})
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayName("Roles")
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.rolesParaAdicionar)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @Html.ActionLink("Adicionar", "Adicionar", new { id = item.Id, UserId = Model.user.Id })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

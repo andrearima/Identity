@@ -1,0 +1,39 @@
+﻿@model Arima.Identity.Ui.Models.UserRoleViewModel
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>UserRoleViewModel</h4>
+    <hr />
+    <div>
+        User: @Html.DisplayFor(model => model.user.UserName)
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayName("Role Name")
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.roles)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>

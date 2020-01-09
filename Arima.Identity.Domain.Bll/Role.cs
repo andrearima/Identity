@@ -32,5 +32,10 @@ namespace Arima.Identity.Domain.Bll
             Infra.Dados.MySql.RoleStore roleStore = new Infra.Dados.MySql.RoleStore();
             return roleStore.ObterRoles();
         }
+        public List<Domain.Role> ObterRolesModel()
+        {
+            Infra.Dados.MySql.RoleStore roleStore = new Infra.Dados.MySql.RoleStore();
+            return roleStore.ObterRoles();
+        }
     }
 }

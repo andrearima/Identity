@@ -15,7 +15,7 @@ namespace Arima.Identity.Infra.Dados.MySql
     {
         public Task AddLoginAsync(User user, UserLoginInfo login, CancellationToken cancellationToken)
         {
-            user.Id = Guid.NewGuid().ToString();
+            user.Id = Guid.NewGuid();
             using var banco = new BancoDados();
             using var comand = banco.CreateCommand();
             comand.Parameters.Add(new MySqlParameter("@LoginProvider", login.LoginProvider));
@@ -36,7 +36,8 @@ namespace Arima.Identity.Infra.Dados.MySql
             try
             {
                 banco.ExecuteQueryASync(comand);
-                return Task.FromResult(IdentityResult.Success);
+                IdentityResult resul = new ArimasIdentityResult(true);
+                return Task.FromResult(resul);
             }
             catch
             {
@@ -49,7 +50,7 @@ namespace Arima.Identity.Infra.Dados.MySql
             while (reader.Read())
             {
                 User user = new User();
-                user.Id = reader["Id"].ToString();
+                user.Id = Guid.Parse(reader["Id"].ToString());
                 user.UserName = reader["UserName"].ToString();
                 user.NormalizedUserName = reader["NormalizedUserName"].ToString();
                 user.Email = reader["Email"].ToString();
@@ -100,13 +101,16 @@ namespace Arima.Identity.Infra.Dados.MySql
             Role role = roleStore.FindByNameAsync(roleName, cancellationToken).Result;
             using var banco = new BancoDados();
             using var comand = banco.CreateCommand();
+            comand.Parameters.Add(new MySqlParameter("@UserId", user.Id));
+            comand.Parameters.Add(new MySqlParameter("@RoleId", role.Id));
             comand.CommandText = @$"INSERT INTO aspnetuserroles
                         (UserId, RoleId) values
-                        ({user.Id}, {role.Id} )";
+                        (@UserId, @RoleId )";
             try
             {
                 banco.ExecuteQueryASync(comand);
-                return Task.FromResult(IdentityResult.Success);
+                IdentityResult result = new ArimasIdentityResult(true);
+                return Task.FromResult(result);
             }
             catch
             {
@@ -115,7 +119,7 @@ namespace Arima.Identity.Infra.Dados.MySql
         }
         public Task<IdentityResult> CreateAsync(User user, CancellationToken cancellationToken)
         {
-            user.Id = Guid.NewGuid().ToString();
+            user.Id = Guid.NewGuid();
             using var banco = new BancoDados();
             using var comand = banco.CreateCommand();
             comand.Parameters.Add(new MySqlParameter("@Id", user.Id));
@@ -168,7 +172,8 @@ namespace Arima.Identity.Infra.Dados.MySql
             try
             {
                 banco.ExecuteQueryASync(comand);
-                return Task.FromResult(IdentityResult.Success);
+                IdentityResult resul = new ArimasIdentityResult(true);
+                return Task.FromResult(resul);
             }
             catch (Exception ex)
             {
@@ -184,7 +189,8 @@ namespace Arima.Identity.Infra.Dados.MySql
             try
             {
                 banco.ExecuteQueryASync(comand);
-                return Task.FromResult(IdentityResult.Success);
+                IdentityResult resul = new ArimasIdentityResult(true);
+                return Task.FromResult(resul);
             }
             catch
             {
@@ -241,7 +247,15 @@ namespace Arima.Identity.Infra.Dados.MySql
         }
         public Task<User> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            using var banco = new BancoDados();
+            using var comand = banco.CreateCommand();
+            comand.Parameters.Add(new MySqlParameter("@LoginProvider", loginProvider));
+            comand.Parameters.Add(new MySqlParameter("@ProviderKey", providerKey));
+            comand.CommandText = @"SELECT UserId FROM aspnetuserlogins WHERE 
+                                        LoginProvider = @LoginProvider and ProviderKey = @ProviderKey";
+            var id = comand.ExecuteScalar().ToString();
+
+            return FindByIdAsync(id,cancellationToken);
         }
         public async Task<User> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
@@ -275,7 +289,7 @@ namespace Arima.Identity.Infra.Dados.MySql
             comand.CommandText = @"SELECT 
                                     NormalizedEmail
                                     FROM aspnetusers where NormalizedUserName = @NormalizedUserName";
-            return Task.FromResult(banco.ExecuteScalar(comand).ToString());
+            return Task.FromResult(banco.ExecuteScalar(comand)?.ToString());
         }
         public Task<bool> GetEmailConfirmedAsync(User user, CancellationToken cancellationToken)
         {
@@ -614,20 +628,20 @@ namespace Arima.Identity.Infra.Dados.MySql
                                     WHERE Id = @Id";
             try
             {
-                var result = await banco.ExecuteQueryASync(comand);
-                if (result)
-                    return IdentityResult.Success;
-                else
-                    return IdentityResult.Failed(new IdentityError { Description = $"Falha ao adicionar Usuario: {user.UserName}" });
+                await banco.ExecuteQueryASync(comand);
+                IdentityResult resul = new ArimasIdentityResult(true);
+                return resul;
             }
             catch (Exception ex)
             {
                 return IdentityResult.Failed(new IdentityError { Description = $"Falha ao adicionar Usuario: {user.UserName} - {ex.Message}" });
             }
         }
+        public IQueryable<User> Users => ObterUsers().AsQueryable<Domain.User>();
 
         #region IDisposable Support
         private bool disposedValue = false; // Para detectar chamadas redundantes
+
 
         protected virtual void Dispose(bool disposing)
         {

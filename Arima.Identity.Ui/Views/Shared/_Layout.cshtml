@@ -16,15 +16,37 @@
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li>@Html.ActionLink("Identity", "Index", "Identity")</li>
+                <div class="navbar-collapse collapse d-sm-inline-flex">
+                    <ul class="navbar-nav btn">
+                        <li>@Html.ActionLink("Roles", "Index", "Roles")</li>
+                    </ul>
+                    <ul class="navbar-nav btn">
+                        <li>@Html.ActionLink("User", "Index", "Users")</li>
+                    </ul>
+                    <ul class="navbar-nav btn">
+                        <li>@Html.ActionLink("Gerencia UserRoles", "Index", "UserRoles")</li>
                     </ul>
                 </div>
-                <ul class="nav navbar-nav navbar-right">
-                    <li>@Html.ActionLink("Registrar", "Registrar", "Conta")</li>
-                    <li>@Html.ActionLink("Logar", "Login", "Conta")</li>
-                </ul>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    @using (Html.BeginForm("Deslogar", "Conta"))
+                    {
+                        <div class="btn btn-light">
+                            <input type="submit" value="Sair">
+                        </div>
+                    }
+                }
+                else
+                {
+                    <ul class="nav navbar-nav navbar-right">
+                        <div class="btn btn-light">
+                            <li>@Html.ActionLink("Registrar", "Registrar", "Conta")</li>
+                        </div>
+                        <div class="btn btn-light">
+                            <li>@Html.ActionLink("Logar", "Login", "Conta")</li>
+                        </div>
+                    </ul>
+                }
             </div>
         </nav>
     </header>

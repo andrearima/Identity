@@ -55,12 +55,12 @@ namespace Arima.Identity.Ui.Controllers
                 user.PasswordHash =  passHelper.HashPassword(user, modelo.Senha);
                 user.NormalizedUserName = modelo.NomeCompleto;
                 CancellationToken token = new CancellationToken();
-                var validasenha = await validacao.ValidateAsync(user);
-                if (!validasenha.Succeeded)
-                {
-                    AdicionarErros(validasenha);
-                    return View(modelo);
-                }
+                //var validasenha = await validacao.ValidateAsync(user);
+                //if (!validasenha.Succeeded)
+                //{
+                //    AdicionarErros(validasenha);
+                //    return View(modelo);
+                //}
 
                 var result = await userBll.CreateAsync(user, token);
                 if (result.Succeeded)
@@ -83,22 +83,7 @@ namespace Arima.Identity.Ui.Controllers
             }
             return View();
         }
-        //[HttpPost]
-        //public async Task<ActionResult> Login(ContaLoginViewModel modelo)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        CancellationToken token = new CancellationToken();
-        //        Domain.Bll.User userBll = new Domain.Bll.User();
-        //        Domain.User user = await userBll.FindByEmailAsync(modelo.Email, token);
 
-        //        if (user != null)
-        //        {
-        //            //if(modelo.Senha == user.PasswordHash)
-        //        }
-        //    }
-        //    return View();
-        //}
         [HttpPost]
         public async Task<ActionResult> Login(ContaLoginViewModel modelo)
         {
@@ -127,11 +112,16 @@ namespace Arima.Identity.Ui.Controllers
                 PasswordSignInAsync(User.UserName, modelo.Senha, true, false);
 
             if (result.Succeeded)
-                return RedirectToAction("Index", "Identity");
+                return RedirectToAction("Index", "Home");
 
             return View("Registrar");
         }
-
+        [HttpPost]
+        public async Task<ActionResult> Deslogar()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
+        }
         public ActionResult AcessoNegado()
         {
             return View();

@@ -7,4 +7,9 @@ namespace Arima.Identity.Domain
     {
         
     }
+
+    public class RoleClaim : IdentityRoleClaim<Guid>
+    {
+
+    }
 }

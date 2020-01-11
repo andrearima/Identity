@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Arima.Identity.Ui.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Arima.Identity.Ui.Controllers
 {
+    [Authorize(Roles = "AdministradorRoles")]
     public class UserRolesController : Controller
     {
         private readonly UserManager<Domain.User> _userManager;
@@ -39,29 +41,45 @@ namespace Arima.Identity.Ui.Controllers
             UserRoleViewModel model = new UserRoleViewModel();
             model.user = new Domain.User();
             model.user = _userManager.FindByIdAsync(id.ToString()).Result;
-            model.roles = new List<string>();
+            model.roles = new List<Domain.Role>();
 
-            model.roles = _userManager.GetRolesAsync(model.user).Result;
+            IList<string> userRolesId = _userManager.GetRolesAsync(model.user).Result;
+            foreach (var roleId in userRolesId)
+            {
+                model.roles.Add(_roleManager.FindByIdAsync(roleId).Result);
+            }
                             
             return View(model);
         }
         
-        // GET: UserRoles/Edit/5
-        public ActionResult Edit(Guid id)
+        private UserRoleViewModel ObterModel(Guid Id)
         {
             UserRoleViewModel model = new UserRoleViewModel();
             model.user = new Domain.User();
-            model.user = _userManager.FindByIdAsync(id.ToString()).Result;
-            model.roles = new List<string>();
+            model.user = _userManager.FindByIdAsync(Id.ToString()).Result;
+            model.roles = new List<Domain.Role>();
             model.rolesParaAdicionar = new List<Domain.Role>();
-            
-            model.roles = _userManager.GetRolesAsync(model.user).Result;
 
-            model.rolesParaAdicionar = _roleManager.Roles.ToList();
-            
-            return View(model);
+            IList<string> RolesName = _userManager.GetRolesAsync(model.user).Result;
+            foreach (var roleName in RolesName)
+            {
+                model.roles.Add(_roleManager.FindByNameAsync(roleName).Result);
+            }
+
+
+            model.rolesParaAdicionar = _roleManager.Roles.ToList().Where(x => !x.Id.Equals(model.roles)).ToList();
+            return model;
         }
 
+        // GET: UserRoles/Edit/5
+        [Authorize]
+        public ActionResult Edit(Guid id)
+        {
+            return View(ObterModel(id));
+        }
+
+        //[HttpPost]
+        [Authorize]
         public ActionResult Adicionar(Guid id, Guid UserId)
         {
             try
@@ -70,13 +88,16 @@ namespace Arima.Identity.Ui.Controllers
                 Domain.User user = _userManager.FindByIdAsync(UserId.ToString()).Result;
                 string name = _roleManager.GetRoleNameAsync(_roleManager.FindByIdAsync(id.ToString()).Result).Result;
                 _userManager.AddToRoleAsync(user, name);
-                return Edit(UserId);
+                return View("Edit", ObterModel(UserId));
             }
             catch
             {
-                return View();
+                return View("Edit", ObterModel(UserId));
             }
         }
+
+        //[HttpPost]
+        [Authorize]
         public ActionResult Remover(Guid id, Guid UserId)
         {
             try
@@ -84,12 +105,12 @@ namespace Arima.Identity.Ui.Controllers
                 // TODO: Add update logic here
                 Domain.User user = _userManager.FindByIdAsync(UserId.ToString()).Result;
                 string name = _roleManager.GetRoleNameAsync(_roleManager.FindByIdAsync(id.ToString()).Result).Result;
-                _userManager.RemoveFromRoleAsync(user, name);
-                return Edit(UserId);
+                IdentityResult x = _userManager.RemoveFromRoleAsync(user, name).Result;
+                return View("Edit", ObterModel(UserId));
             }
             catch
             {
-                return Edit(UserId);
+                return View("Edit", ObterModel(UserId));
             }
         }
     }

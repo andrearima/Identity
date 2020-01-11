@@ -9,7 +9,9 @@ namespace Arima.Identity.Domain.Dal
         IUserPasswordStore<Domain.User>,
         IUserRoleStore<Domain.User>,
         IUserLoginStore<Domain.User>,
-        IQueryableUserStore<Domain.User>
+        IQueryableUserStore<Domain.User>,
+        IUserValidator<Domain.User>
+        //IUserClaimsPrincipalFactory<Domain.User>
     {
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -255,7 +256,7 @@ namespace Arima.Identity.Infra.Dados.MySql
                                         LoginProvider = @LoginProvider and ProviderKey = @ProviderKey";
             var id = comand.ExecuteScalar().ToString();
 
-            return FindByIdAsync(id,cancellationToken);
+            return FindByIdAsync(id, cancellationToken);
         }
         public async Task<User> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
@@ -386,13 +387,32 @@ namespace Arima.Identity.Infra.Dados.MySql
                                     RoleId
                                     FROM aspnetuserroles where UserId = @UserId";
 
-            IList<string> lista = new List<string>();
+            IList<string> listaIds = new List<string>();
             using (var reader = comand.ExecuteReader())
                 while (reader.Read())
                 {
-                    lista.Add(reader["RoleId"].ToString());
+                    listaIds.Add(reader["RoleId"].ToString());
                 }
-            return Task.FromResult(lista);
+
+            IList<string> nomesRoles = new List<string>();
+            foreach (var id in listaIds)
+            {
+                comand.Parameters.Clear();
+                comand.Parameters.Add(new MySqlParameter("@RoleId", id));
+                comand.CommandText = @"SELECT 
+                                    Name
+                                    FROM aspnetroles where Id = @RoleId";
+
+                using (var reader = comand.ExecuteReader())
+                    while (reader.Read())
+                    {
+                        nomesRoles.Add(reader["Name"].ToString());
+                    }
+            }
+            
+
+
+            return Task.FromResult(nomesRoles);
         }
         public Task<bool> GetTwoFactorEnabledAsync(User user, CancellationToken cancellationToken)
         {
@@ -412,7 +432,7 @@ namespace Arima.Identity.Infra.Dados.MySql
             comand.CommandText = @"SELECT 
                                     Id
                                     FROM aspnetusers where UserName = @UserName";
-            return Task.FromResult(banco.ExecuteScalar(comand).ToString());
+            return Task.FromResult(banco.ExecuteScalar(comand)?.ToString());
         }
         public Task<string> GetUserNameAsync(User user, CancellationToken cancellationToken)
         {
@@ -422,16 +442,16 @@ namespace Arima.Identity.Infra.Dados.MySql
             comand.CommandText = @"SELECT 
                                     UserName
                                     FROM aspnetusers where Id = @UserId";
-            return Task.FromResult(banco.ExecuteScalar(comand).ToString());
+            return Task.FromResult(banco.ExecuteScalar(comand)?.ToString());
         }
         public Task<IList<User>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
         {
             using var banco = new BancoDados();
             using var comand = banco.CreateCommand();
-            comand.Parameters.Add(new MySqlParameter("@Name", roleName));
+            comand.Parameters.Add(new MySqlParameter("@NormalizedName", roleName));
             comand.CommandText = @"SELECT 
                                     Id
-                                    FROM aspnetroles where Name = @Name";
+                                    FROM aspnetroles where NormalizedName = @NormalizedName";
 
             var id = comand.ExecuteScalar().ToString();
             comand.Parameters.Clear();
@@ -465,7 +485,7 @@ namespace Arima.Identity.Infra.Dados.MySql
         public Task<bool> IsInRoleAsync(User user, string roleName, CancellationToken cancellationToken)
         {
             var listaUsers = GetUsersInRoleAsync(roleName, cancellationToken).Result;
-            return Task.FromResult(listaUsers.Contains(user));
+            return Task.FromResult(listaUsers.Where(x => x.Id.Equals(user.Id)).Count() > 0);
         }
         public Task RemoveFromRoleAsync(User user, string roleName, CancellationToken cancellationToken)
         {
@@ -639,6 +659,18 @@ namespace Arima.Identity.Infra.Dados.MySql
         }
         public IQueryable<User> Users => ObterUsers().AsQueryable<Domain.User>();
 
+
+        public Task<IdentityResult> ValidateAsync(UserManager<User> manager, User user)
+        {
+            var usuario = manager.FindByNameAsync(user.UserName).Result;
+            usuario = manager.FindByEmailAsync(user.Email).Result;
+            if (usuario != null)
+                return Task.FromResult(new IdentityResult());
+
+            IdentityResult identityResult = new ArimasIdentityResult(true);
+            return Task.FromResult(identityResult);
+        }
+
         #region IDisposable Support
         private bool disposedValue = false; // Para detectar chamadas redundantes
 
@@ -674,6 +706,22 @@ namespace Arima.Identity.Infra.Dados.MySql
             // TODO: remover marca de comentário da linha a seguir se o finalizador for substituído acima.
             // GC.SuppressFinalize(this);
         }
+
+        //public Task<ClaimsPrincipal> CreateAsync(User user)
+        //{
+        //    IList<string> roles = GetRolesAsync(user, new CancellationToken()).Result;
+        //    RoleStore roleStore = new RoleStore();
+        //    foreach (var nome in roles)
+        //    {
+                
+        //    }
+        //    IList<Claim> listaclaim
+
+        //    ClaimsPrincipal principal = new ClaimsPrincipal(,);
+        //    principal.Claims
+
+        //    throw new NotImplementedException();
+        //}
         #endregion
     }
 }

@@ -27,9 +27,6 @@ namespace Arima.Identity.Ui.Controllers
         
         
         
-        
-        
-        
         [Authorize]
         public ActionResult Index()
         {
@@ -40,7 +37,7 @@ namespace Arima.Identity.Ui.Controllers
         [Authorize]
         public ActionResult Details(string id)
         {
-            return View(_userManager.FindByIdAsync(id));
+            return View(_userManager.FindByIdAsync(id).Result);
         }
 
         // GET: Users/Create
@@ -66,7 +63,8 @@ namespace Arima.Identity.Ui.Controllers
                 user.UserName = UserName;
                 user.Email = Email;
 
-                _userManager.CreateAsync(user, PasswordHash);
+                IdentityResult x = _userManager.CreateAsync(user, PasswordHash).Result;
+
 
                 return RedirectToAction(nameof(Index));
             }
@@ -80,7 +78,7 @@ namespace Arima.Identity.Ui.Controllers
         [Authorize]
         public ActionResult Edit(string id)
         {
-            return View(_userManager.FindByIdAsync(id));
+            return View(_userManager.FindByIdAsync(id).Result);
         }
 
         // POST: Users/Edit/5
@@ -105,7 +103,7 @@ namespace Arima.Identity.Ui.Controllers
         [Authorize]
         public ActionResult Delete(string id)
         {
-            return View(_userManager.FindByIdAsync(id));
+            return View(_userManager.FindByIdAsync(id).Result);
         }
 
         // POST: Users/Delete/5

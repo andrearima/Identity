@@ -39,30 +39,48 @@ namespace Arima.Identity.Ui
             });
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options => options.LoginPath = "/Home/Index");
+                .AddCookie(options => options.LoginPath = "/Home/Index")
+                ;
+
+            services.AddAuthorization();
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                // Cookie settings
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(999);
+
+                options.LoginPath = "/Conta/Login";
+                options.AccessDeniedPath = "/Conta/AcessoNegado";
+                options.SlidingExpiration = true;
+            });
 
             services.AddTransient<Microsoft.AspNetCore.Identity.IUserStore<Arima.Identity.Domain.User>, UserStore>();
 
             services.AddTransient<Microsoft.AspNetCore.Identity.IRoleStore<Arima.Identity.Domain.Role>, RoleStore>();
-
+            
             services.AddTransient<Microsoft.AspNetCore.Identity.IRoleValidator<Arima.Identity.Domain.Role>, RoleStore>();
+
+            services.AddTransient<Microsoft.AspNetCore.Identity.IUserRoleStore <Arima.Identity.Domain.User>, UserStore>();
+
+            services.AddTransient<Microsoft.AspNetCore.Identity.IUserValidator<Arima.Identity.Domain.User>, UserStore>();
 
             services.AddTransient<Microsoft.AspNetCore.Identity.IQueryableRoleStore<Arima.Identity.Domain.Role>, RoleStore>();
 
             services.AddTransient<Microsoft.AspNetCore.Identity.IQueryableUserStore<Arima.Identity.Domain.User>, UserStore>();
 
-            //services.AddIdentity<Arima.Identity.Domain.User, Arima.Identity.Domain.Role>()
-            //    .AddSignInManager()
-            //    .AddUserStore<UserStore>()
-            //    .AddRoles<Domain.Role>()
-            //    .AddRoleStore<RoleStore>()
-            //    .AddSignInManager();
-
-            services.AddIdentityCore<Domain.User>()
+            services.AddIdentity<Arima.Identity.Domain.User, Arima.Identity.Domain.Role>()
+                .AddSignInManager()
                 .AddUserStore<UserStore>()
                 .AddRoles<Domain.Role>()
                 .AddRoleStore<RoleStore>()
                 .AddSignInManager();
+
+            //services.AddIdentityCore<Domain.User>()
+            //    .AddUserStore<UserStore>()
+            //    .AddRoles<Domain.Role>()
+            //    .AddRoleStore<RoleStore>()
+            //    .AddSignInManager();
 
 
             services.Configure<IdentityOptions>(options =>
@@ -87,16 +105,7 @@ namespace Arima.Identity.Ui
 
             });
 
-            services.ConfigureApplicationCookie(options =>
-            {
-                // Cookie settings
-                options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(999);
-
-                options.LoginPath = "/Conta/Login";
-                options.AccessDeniedPath = "/Conta/AcessoNegado";
-                options.SlidingExpiration = true;
-            });
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

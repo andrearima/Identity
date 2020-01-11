@@ -38,7 +38,7 @@ namespace Arima.Identity.Ui.Controllers
         [Authorize]
         public ActionResult Details(Guid id)
         {
-            return View(_roleManager.FindByIdAsync(id.ToString()));
+            return View(_roleManager.FindByIdAsync(id.ToString()).Result);
         }
 
         // GET: Identity/Create
